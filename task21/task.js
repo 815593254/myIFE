@@ -40,27 +40,26 @@ $(function () {
     });
 
     $('#left_input').on('click', function () {  //从左侧输入，
-        if (/^\d+$/.test(input_list.val())) {  //测试语法
-            arr.unshift(input_list.val());  //压入数组
-            write_list();   //显示
-            input_list.val('');  //清空输入框
-        }else{
-            return null;
-        }
+        var strTmp = StrToStrarr(input_list.val())   //测试语法
+        strTmp.map(function(s){
+            arr.unshift(s);
+        })
+        // arr.unshift(input_list.val());  //压入数组
+        write_list();   //显示
+        input_list.val('');  //清空输入框
     });
 
     $('#right_input').on('click', function () {
-        if (/^\d+$/.test(input_list.val())) {
-            arr.push(input_list.val());
-            write_list();
-            input_list.val('');
-        }else{
-            return null;
-        }
+        var strTmp = StrToStrarr(input_list.val());
+        strTmp.map(function(s){
+            arr.push(s);
+        }) 
+        write_list();
+        input_list.val('');
     });
-    
+
     $('#left_out').on('click', function () {   //删除
-        arr.shift();  
+        arr.shift();
         write_list();
     });
 
@@ -69,10 +68,20 @@ $(function () {
         write_list();
     });
 
-    function write_list(){  //修改dom显示出结果
+    function write_list() {  //修改dom显示出结果
         list.find('td').remove();
-        arr.map(function(x){
+        arr.map(function (x) {
             list.append("<td>" + x + "</td>");
         })
+    }
+
+    function StrToStrarr(str) {
+        return str.trim().split(/[^0-9a-zA-Z\u4e00-\u9fa5]+/).filter(function (e) {
+            if (e != '' && e.length > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 })
