@@ -1,14 +1,13 @@
-<<<<<<< HEAD
 td{
     width:30px;
     height:30px;
     background-color: #02e77d;
     text-align: center;
-=======
-td{
-    width:30px;
-    height:30px;
-    background-color: #02e77d;
-    text-align: center;
->>>>>>> a341bbc0bd3cb7dcd9283ed4eb56053828171d86
+    padding:0px 5px;
+}
+.highlight{
+    color:red;
+}
+table{
+    margin:10px;
 }
