@@ -68,4 +68,6 @@ $(function () {
     $('#removeAll').on('click', function () {
         list.find('td').remove();;
     });
+
+    
 })
