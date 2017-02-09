@@ -69,5 +69,6 @@ $(function () {
         list.find('td').remove();;
     });
 
+var tagArr = new Set();
     
 })
