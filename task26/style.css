@@ -21,7 +21,7 @@
     margin-top:5px;
     border:2px #222 solid;
 }
-#createNewShip{
+.createNewShipBtn{
     margin: 5px;
 }
 #logs{
