@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title> task23</title>
+    <link href="./style.css" rel="stylesheet" />
+    <script src="../jquery-3.1.1.js"></script>
+    <script src="./app.js"></script>
+</head>
+
+<body>
+    <div class="child_1" id="root"><span>1</span>
+        <div class="child_2"><span>2</span>
+            <div class="child_3"><span>3</span>
+                <div class="child_4"><span>4</span></div>
+                <div class="child_4"><span>5</span></div>
+                <div class="child_4"><span>6</span></div>
+                <div class="child_4"><span>7</span></div>
+            </div>
+            <div class="child_3"><span>8</span>
+                <div class="child_4"><span>9</span></div>
+                <div class="child_4"><span>10</span></div>
+                <div class="child_4"><span>11</span></div>
+            </div>
+        </div>
+        <div class="child_2"><span>12</span>
+            <div class="child_3"><span>13</span>
+                <div class="child_4"><span>14</span></div>
+                <div class="child_4"><span>15</span></div>
+            </div>
+            <div class="child_3"><span>16</span>
+                <div class="child_4"><span>17</span></div>
+                <div class="child_4"><span>18</span></div>
+                <div class="child_4"><span>19</span></div>
+                <div class="child_4"><span>20</span></div>
+            </div>
+        </div>
+    </div>
+    <input type="button" id="dlrBtn" value="前序遍历" />
+    <!--   <input type="button" id="inoBtn" value="中序遍历"/>  -->
+    <input type="button" id="postBtn" value="后序遍历" /><br /><br />
+    <label for="searchValue">输入查找的值:&nbsp;</label><input type="text" id="searchValue">&nbsp;<input id="searchBtn" type="button"
+        value="查找" />
+    <p id="result"></p>
+    <input type="button" value="删除" id="deleteBtn"><br /><br />
+    <label for="insertNewValue">插入新值：</label><input type="text" id="insertNewValue"><input type="button" value="确定" id="insertBtn">
+</body>
+
+</html>
