@@ -30,7 +30,7 @@ var SpaceShip = function (shipId) {
     this.deg = 0;      //飞船角坐标角度
     this.speed = 50;   //飞行角速度，(单位：度/秒)
     this.ENERGY_CONSUME_PRE_SECOND = 0.05;  //能源消耗速度(每秒百分之几)
-    this.ENERGY_RECOVER_PRE_SECOND=0.02;    //能源回复速度（每秒百分之几）
+    this.ENERGY_RECOVER_PRE_SECOND = 0.02;    //能源回复速度（每秒百分之几）
 }
 
 /*****设置飞船转为飞行状态******/
@@ -57,19 +57,26 @@ SpaceShip.prototype.animation = function () {
         this.shipDom.css('top', this.topPosition + 'px');   //设css
         this.shipDom.css('left', this.leftPosition + 'px');
         this.shipDom.css('transform', 'rotate(' + this.deg * -1 + 'deg)');
-        this.shipDom.find('.remainEnergy').text(Math.round(this.remainEnergy)+"%");
+        this.shipDom.find('.remainEnergy').text(Math.round(this.remainEnergy) + "%");
     }
     if (this.status == 'stop') {
         this.remainEnergy += this.totalEnergy * this.ENERGY_RECOVER_PRE_SECOND / FRAME_PRE_SECOND;    //计算每帧回复多少能源
-        this.shipDom.find('.remainEnergy').text(Math.round(this.remainEnergy)+"%");
+        this.shipDom.find('.remainEnergy').text(Math.round(this.remainEnergy) + "%");
     }
 }
 
+SpaceShip.prototype.radio = function (signal) {
+    if (this.shipId == signal.id) {
+        this[signal.commond];
+    }
+}
 
+SpaceShip.prototype.destructiveMechanism = function () {
+    this.shipDom.remove();
+}
 
 var ship1 = new SpaceShip(1);
 ship1.fly();
-
 
 setInterval(function () {
     ship1.animation();
