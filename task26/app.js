@@ -21,6 +21,15 @@ var FRAME_PRE_SECOND = 100;   //帧数
 /****飞船类*****/
 var SpaceShip = function (shipId) {
     this.shipDom = $('#ship-fire');     //飞船DOM
+    this.shipDom = (function () {
+        $('.plant').append('<div class="ship-fire" id="spaceShip-' + shipId + '">' +
+            '<div class="ship">' +
+            '<div class="shipId">1号</div>' +
+            '<div class="remainEnergy">100%</div>' +
+            '</div>' +
+            '</div>')
+        return $('#spaceShip-' + shipId);
+    })()
     this.shipId = shipId;       //飞船号
     this.status = 'static';     //飞船状态
     this.totalEnergy = SHIP_TOTAL_ENERGY;    //总能源
@@ -54,31 +63,63 @@ SpaceShip.prototype.animation = function () {
         this.leftPosition = 85 + ORBIT_HEIGHT * Math.cos(this.deg * Math.PI * 2 / 360);
         this.deg += this.speed / FRAME_PRE_SECOND;          //计算每帧改变多少角度
         this.remainEnergy -= this.totalEnergy * this.ENERGY_CONSUME_PRE_SECOND / FRAME_PRE_SECOND;    //计算每帧减少多少能源
-        this.shipDom.css('top', this.topPosition + 'px');   //设css
-        this.shipDom.css('left', this.leftPosition + 'px');
-        this.shipDom.css('transform', 'rotate(' + this.deg * -1 + 'deg)');
-        this.shipDom.find('.remainEnergy').text(Math.round(this.remainEnergy) + "%");
+        this.shipDom.css('top', this.topPosition + 'px');                              //    
+        this.shipDom.css('left', this.leftPosition + 'px');                            //设置样式     
+        this.shipDom.css('transform', 'rotate(' + this.deg * -1 + 'deg)');             //Css 
+        this.shipDom.find('.remainEnergy').text(Math.round(this.remainEnergy) + "%");  //      
     }
     if (this.status == 'stop') {
-        this.remainEnergy += this.totalEnergy * this.ENERGY_RECOVER_PRE_SECOND / FRAME_PRE_SECOND;    //计算每帧回复多少能源
+        if (this.remainEnergy <= this.totalEnergy) {
+            this.remainEnergy += this.totalEnergy * this.ENERGY_RECOVER_PRE_SECOND / FRAME_PRE_SECOND;    //计算每帧回复多少能源
+        }
         this.shipDom.find('.remainEnergy').text(Math.round(this.remainEnergy) + "%");
     }
 }
 
-SpaceShip.prototype.radio = function (signal) {
+SpaceShip.prototype.radio = function (signal) {    //电台
     if (this.shipId == signal.id) {
         this[signal.commond];
     }
 }
 
-SpaceShip.prototype.destructiveMechanism = function () {
+SpaceShip.prototype.destructiveMechanism = function () {   //自爆装置
     this.shipDom.remove();
 }
 
-var ship1 = new SpaceShip(1);
-ship1.fly();
+var Commander = function (commanderId) {    //指挥官类
+    this.commanderId = commanderId;
+    this.commanderDom = (function () {
+        $('#commander-area').append('<div class="control-area" id="commander-' + commanderId + '" >' +
+            '<input id="createNewShip" value="飞船飞行" type="button" />' +
+            '</div>')
+        return $('#commander-' + commanderId);
+    })()
+}
 
-setInterval(function () {
-    ship1.animation();
+Commander.prototype.orderCreateNewShip = function (shipId) {   //起飞新的飞船的命令
+    var ship = new SpaceShip(1);
+}
 
-}, 1000 / FRAME_PRE_SECOND)
+Commander.prototype.orderBeginFly = function (shipId) {    //命令：开始飞行
+
+}
+
+Commander.prototype.orderStopFly = function (shipId) {     //命令：停止飞行
+
+}
+
+Commander.prototype.orderDestory = function (shipId) {     //命令：摧毁飞船
+
+}
+
+// Commander.prototype.dom = function(){
+//     console.log(this.commanderDom.html());
+// }
+
+var commander1 = new Commander(1);
+commander1.orderCreateNewShip(1);
+// commander1.dom();
+// setInterval(function () {
+//     ship1.animation();
+
+// }, 1000 / FRAME_PRE_SECOND)
