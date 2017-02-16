@@ -1,29 +1,27 @@
 var SHIP_TOTAL_ENERGY = 100;  //飞船初始能源
-var SAPCE_SHIP_ARRAY = [];    //飞船队列
-var ORBIT_HEIGHT = 200;       //轨道半径
 var FRAME_PRE_SECOND = 100;   //帧数
 var MAX_SHIP_NUM = 4;         //最大飞船数
+var HEIGHT_ARRAY = [200, 250, 300, 350];  //设定轨道
 
 /****飞船类*****/
-var SpaceShip = function (shipId) {
-    this.shipDom = $('#ship-fire');     //飞船DOM
-
+var SpaceShip = function (commanderId, shipId, height) {
+    //飞船DOM
     this.shipDom = (function () {
-        $('.plant').append('<div class="ship-fire" id="spaceShip-' + shipId + '">' +
+        $('.plant').append('<div class="ship-fire" style="left:' + (100 + height) + 'px" id="commander-' + commanderId + '_spaceShip-' + shipId + '">' +
             '<div class="ship">' +
             '<div class="shipId">' + shipId + '号</div>' +
             '<div class="remainEnergy">100%</div>' +
             '</div>' +
             '</div>')
-        return $('#spaceShip-' + shipId);
+        return $('#commander-' + commanderId + '_spaceShip-' + shipId);
     })()
-
     this.shipId = shipId;       //飞船号
     this.status = 'static';     //飞船状态
+    this.ORBIT_HEIGHT = height;       //轨道半径
     this.totalEnergy = SHIP_TOTAL_ENERGY;    //总能源
     this.remainEnergy = SHIP_TOTAL_ENERGY;   //剩余能源
-    this.leftPosition = 290;  //left坐标量
-    this.topPosition = 75;   //top坐标量
+    this.leftPosition = 0;  //left坐标量,这里可设起始位置
+    this.topPosition = 0;   //top坐标量
     this.deg = 0;      //飞船角坐标角度
     this.speed = 50;   //飞行角速度，(单位：度/秒)
     this.ENERGY_CONSUME_PRE_SECOND = 0.05;  //能源消耗速度(每秒百分之几)
@@ -47,8 +45,8 @@ SpaceShip.prototype.animation = function () {
             this.status = 'stop'
             return;
         }
-        this.topPosition = 50 - ORBIT_HEIGHT * Math.sin(this.deg * Math.PI * 2 / 360);    //计算top和left的值
-        this.leftPosition = 85 + ORBIT_HEIGHT * Math.cos(this.deg * Math.PI * 2 / 360);
+        this.topPosition = 50 - this.ORBIT_HEIGHT * Math.sin(this.deg * Math.PI * 2 / 360);    //计算top和left的值
+        this.leftPosition = 100 + this.ORBIT_HEIGHT * Math.cos(this.deg * Math.PI * 2 / 360);
         this.deg += this.speed / FRAME_PRE_SECOND;          //计算每帧改变多少角度
         this.remainEnergy -= this.totalEnergy * this.ENERGY_CONSUME_PRE_SECOND / FRAME_PRE_SECOND;    //计算每帧减少多少能源
         this.shipDom.css('top', this.topPosition + 'px');                              //    
@@ -56,6 +54,7 @@ SpaceShip.prototype.animation = function () {
         this.shipDom.css('transform', 'rotate(' + this.deg * -1 + 'deg)');             //Css 
         this.shipDom.find('.remainEnergy').text(Math.round(this.remainEnergy) + "%");  //      
     }
+
     if (this.status == 'stop') {
         if (this.remainEnergy <= this.totalEnergy) {
             this.remainEnergy += this.totalEnergy * this.ENERGY_RECOVER_PRE_SECOND / FRAME_PRE_SECOND;    //计算每帧回复多少能源
@@ -67,14 +66,12 @@ SpaceShip.prototype.animation = function () {
 SpaceShip.prototype.radio = function (signal) {    //电台
     if (this.shipId == signal.id) {
         this[signal.commond]();
-        // this.fly();
     }
 }
 
 SpaceShip.prototype.destructive = function () {   //自爆装置
     this.shipDom.remove();
 }
-
 
 var Commander = function (commanderId) {    //指挥官类
     this.commanderId = commanderId;
@@ -112,63 +109,74 @@ Commander.prototype.orderCreateNewShip = function () {   //起飞新的飞船的
         console.log('飞船数到达上限');
         return;
     }
-    var ship = new SpaceShip(emptyId);    //new飞船实例
+    var ship = new SpaceShip(this.commanderId, emptyId, HEIGHT_ARRAY[emptyId - 1]);    //new飞船实例
     this.spaceShipArray[emptyId] = ship;
-    this.commanderDom.append('<div id="shipControl-' + emptyId + '"><span>' + emptyId + '号飞船</span>' +
+    this.commanderDom.append('<div class="shipControl" id="shipControl-' + emptyId + '"><span>' + emptyId + '号飞船</span>' +
         '<input type="button" value="开始飞行" onclick="commander' + this.commanderId + '.orderBeginFly(' + emptyId + ')"></input>' +
         '<input type="button" value="停止飞行" onclick="commander' + this.commanderId + '.orderStopFly(' + emptyId + ')"></input>' +
         '<input type="button" value="摧毁飞船" onclick="commander' + this.commanderId + '.orderDestory(' + emptyId + ')"></input></div>');
 }
 
 Commander.prototype.orderBeginFly = function (shipId) {    //命令：开始飞行
-    for (var i = 1; i <= MAX_SHIP_NUM; i++) {
-        if (this.spaceShipArray[i]) {
-            this.spaceShipArray[i].radio({ id: shipId, commond: 'fly' });
-        }
-    }
+    Logger.log(shipId + '号飞船开始飞行');
+    Mediator.sendBroadcase(this.spaceShipArray, { id: shipId, commond: 'fly' });
 }
 
 Commander.prototype.orderStopFly = function (shipId) {     //命令：停止飞行
-    for (var i = 1; i <= MAX_SHIP_NUM; i++) {
-        if (this.spaceShipArray[i]) {
-            this.spaceShipArray[i].radio({ id: shipId, commond: 'stop' });
-        }
-    }
+    Logger.log(shipId + '号飞船停止飞行');
+    Mediator.sendBroadcase(this.spaceShipArray, { id: shipId, commond: 'stop' });
 }
 
 Commander.prototype.orderDestory = function (shipId) {     //命令：摧毁飞船
-    for (var i = 1; i <= MAX_SHIP_NUM; i++) {
-        if (this.spaceShipArray[i]) {
-            this.spaceShipArray[i].radio({ id: shipId, commond: 'destructive' });
-        }
-    }
+    Logger.log('摧毁' + shipId + '号飞船');
+    Mediator.sendBroadcase(this.spaceShipArray, { id: shipId, commond: 'destructive' });
     $('#shipControl-' + shipId).remove();
     this.spaceShipArray[shipId] = false;
 }
 
-var Mediator = (function (cmd) {
-    this.cmd = cmd;
-    this.sendBroadcase = function () {
-        var spaceShipArray = commander1.getShipArray();
-        for (var i = 1; i <= MAX_SHIP_NUM; i++) {
-            if (spaceShipArray[i]) {
-                spaceShipArray[i].radio({ id: shipId, commond: 'fly' });
+var Logger = {
+    logDom: (function () {
+        $('.main-content').append('<div id="logs"><p>日志:</p></div>');
+        return $('#logs');
+    })(),
+    log: function (text) {
+        this.logDom.append('<p>' + text + '</p>');
+    }
+};
+
+var Mediator = (function () {     //模拟丢包延迟
+    var errorRate = 0.3;
+    return {
+        sendBroadcase: function (shipArr, cmd) {
+            var spaceShipArray = shipArr;
+            if (Math.random() <= errorRate) {
+                Logger.log('命令受到干扰，传送失败！');
+            } else {
+                for (var i = 1; i <= MAX_SHIP_NUM; i++) {
+                    if (spaceShipArray[i]) {
+                        spaceShipArray[i].radio({ id: cmd.id, commond: cmd.commond });
+                    }
+                }
             }
         }
     }
 })()
 
-
-
-
 var commander1 = new Commander(1);      //建立指挥官实例
-commander1.init(1);                     //初始化
+commander1.init();                     //初始化
+var commander2 = new Commander(2);      //建立指挥官实例
+commander2.init();                     //初始化
+
 
 setInterval(function () {
-    var spaceShipArray = commander1.getShipArray();
+    var spaceShipArray1 = commander1.getShipArray();
+    var spaceShipArray2 = commander2.getShipArray();
     for (var i = 1; i <= MAX_SHIP_NUM; i++) {
-        if (spaceShipArray[i]) {
-            spaceShipArray[i].animation();
+        if (spaceShipArray1[i]) {
+            spaceShipArray1[i].animation();
+        }
+        if (spaceShipArray2[i]) {
+            spaceShipArray2[i].animation();
         }
     }
 }, 1000 / FRAME_PRE_SECOND)

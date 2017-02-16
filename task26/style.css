@@ -1,10 +1,10 @@
 .main-content{
-    width:600px;
+    width:800px;
     margin: auto;
 }
 .space{
     width:100%;
-    height:600px;
+    height:800px;
     background-color: black;
 }
 .plant{
@@ -12,8 +12,8 @@
     height:200px;
     border-radius: 100px;
     position:relative;
-    left:200px;
-    top:200px;
+    left:300px;
+    top:300px;
     background-color: blue;
 }
 .control-area{
@@ -37,9 +37,9 @@
     height:100px;
     border-radius:30px;
     background-color: blue;
-    position:relative;
+    position:absolute;
     top:50px;
-    left:285px;
+
 }
 .ship{
     width:30px;
@@ -56,4 +56,14 @@
 .remainEnergy{
     transform:rotate(90deg);
     padding-left: 8px;
+}
+.shipControl{
+    margin: 10px;
+}
+.shipControl input{
+    margin: 0 5px;;
+}
+#logs{
+    height:400px;
+    overflow: scroll;
 }

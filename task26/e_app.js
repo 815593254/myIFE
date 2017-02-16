@@ -31,7 +31,6 @@ var Logger = {
         if (this.ele == undefined) {
             this.ele = document.getElementById('logs');
         }
-
         this.ele.value += text + '\n';
         this.ele.scrollTop = this.ele.scrollHeight;
     }
