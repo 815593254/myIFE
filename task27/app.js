@@ -4,7 +4,7 @@ var MAX_SHIP_NUM = 4;         //最大飞船数
 var HEIGHT_ARRAY = [200, 250, 300, 350];  //设定轨道
 
 /****飞船类*****/
-var SpaceShip = function (commanderId, shipId, height) {
+var SpaceShip = function (shipSet,commanderId, shipId, height) {
     //飞船DOM
     this.shipDom = (function () {
         $('.plant').append('<div class="ship-fire" style="left:' + (100 + height) + 'px" id="commander-' + commanderId + '_spaceShip-' + shipId + '">' +
@@ -23,9 +23,11 @@ var SpaceShip = function (commanderId, shipId, height) {
     this.leftPosition = 0;  //left坐标量,这里可设起始位置
     this.topPosition = 0;   //top坐标量
     this.deg = 0;      //飞船角坐标角度
-    this.speed = 50;   //飞行角速度，(单位：度/秒)
-    this.ENERGY_CONSUME_PRE_SECOND = 0.05;  //能源消耗速度(每秒百分之几)
-    this.ENERGY_RECOVER_PRE_SECOND = 0.02;    //能源回复速度（每秒百分之几）
+    // this.speed = 50;   //飞行角速度，(单位：度/秒)
+    this.speed = shipSet.powerSystem;
+    // this.ENERGY_CONSUME_PRE_SECOND = 0.05;  //能源消耗速度(每秒百分之几)
+    this.ENERGY_CONSUME_PRE_SECOND = shipSet.energySystem;
+    this.ENERGY_RECOVER_PRE_SECOND = shipSet.energySystem;    //能源回复速度（每秒百分之几）
 }
 
 /*****设置飞船转为飞行状态******/
@@ -84,7 +86,9 @@ Commander.prototype.init = function () {    //初始化指挥官类
         this.spaceShipArray[i] = false;
     }
     $('#commander-area').append('<div class="control-area" id="commander-' + this.commanderId + '" >' +   //添加dom节点
-        '<input class="createNewShipBtn" value="起飞新的飞船" type="button" onclick="commander' + this.commanderId + '.orderCreateNewShip()"/>' +
+        '<input class="createNewShipBtn" value="起飞新的飞船" type="button" onclick="commander' + this.commanderId + '.orderCreateNewShip()"/>&nbsp;&nbsp;' +
+        '<select name="powerSystem"><option value="30">前进号</option><option value="50">奔腾号</option><option value="80">超越号</option></select>&nbsp;&nbsp;&nbsp;' +
+        '<select name="energySystem"><option value="0.02">劲量型</option><option value="0.03">光能型</option><option value="0.04">永久型</option></select>' +
         '</div>');
     this.commanderDom = $('#commander-' + this.commanderId);
 }
@@ -105,11 +109,15 @@ Commander.prototype.getShipArray = function () {     //返回该指挥官的飞�
 
 Commander.prototype.orderCreateNewShip = function () {   //起飞新的飞船的命令
     var emptyId = this.getEmptyId();
+    var shipSet = {};
     if (emptyId == false) {
         console.log('飞船数到达上限');
         return;
     }
-    var ship = new SpaceShip(this.commanderId, emptyId, HEIGHT_ARRAY[emptyId - 1]);    //new飞船实例
+    this.commanderDom.find('select').each(function () {
+        shipSet[$(this).attr('name')] = $(this).val();
+    });
+    var ship = new SpaceShip(shipSet,this.commanderId, emptyId, HEIGHT_ARRAY[emptyId - 1]);    //new飞船实例
     this.spaceShipArray[emptyId] = ship;
     this.commanderDom.append('<div class="shipControl" id="shipControl-' + emptyId + '"><span>' + emptyId + '号飞船</span>' +
         '<input type="button" value="开始飞行" onclick="commander' + this.commanderId + '.orderBeginFly(' + emptyId + ')"></input>' +
@@ -134,6 +142,7 @@ Commander.prototype.orderDestory = function (shipId) {     //命令：摧毁飞�
     this.spaceShipArray[shipId] = false;
 }
 
+/*****日志*****/
 var Logger = {
     logDom: (function () {
         $('.main-content').append('<div id="logs"><p>日志:</p></div>');
@@ -144,7 +153,8 @@ var Logger = {
     }
 };
 
-var Mediator = (function () {     //模拟丢包延迟
+/*****传输介质，模拟丢包和延迟*****/
+var Mediator = (function () {
     var errorRate = 0.3;
     return {
         sendBroadcase: function (shipArr, cmd) {
