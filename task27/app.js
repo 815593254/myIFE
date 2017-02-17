@@ -2,11 +2,11 @@ var SHIP_TOTAL_ENERGY = 100;  //飞船初始能源
 var FRAME_PRE_SECOND = 100;   //帧数
 var MAX_SHIP_NUM = 4;         //最大飞船数
 var HEIGHT_ARRAY = [200, 250, 300, 350];  //设定轨道
-var POWER_SYSTEM = [{speed:30,consume:0.05},{speed:50,consume:0.07},{speed:80,consume:0.09}]   //动力系统
-var ENERGY_RECOVER_PRE_SECOND = [0.02,0.03,0.04]     //充电系统
+var POWER_SYSTEM = [{ speed: 30, consume: 0.05 }, { speed: 50, consume: 0.07 }, { speed: 80, consume: 0.09 }]   //动力系统
+var ENERGY_RECOVER_PRE_SECOND = [0.02, 0.03, 0.04]     //充电系统
 
 /****飞船类*****/
-var SpaceShip = function (shipSet,commanderId, shipId, height) {
+var SpaceShip = function (shipSet, commanderId, shipId, height) {
     //飞船DOM
     this.shipDom = (function () {
         $('.plant').append('<div class="ship-fire" style="left:' + (100 + height) + 'px" id="commander-' + commanderId + '_spaceShip-' + shipId + '">' +
@@ -77,6 +77,25 @@ SpaceShip.prototype.destructive = function () {   //自爆装置
     this.shipDom.remove();
 }
 
+SpaceShip.prototype.adapter = function () {
+    var id = jsonCmd.id.toString(2);
+    var cmd = '';
+    var path = '0000';
+    switch (jsonCmd.commond) {
+        case 'fly':
+            cmd = '0001';
+            break;
+        case 'stop':
+            cmd = "0010";
+            break;
+        case 'destructive':
+            cmd = '1100';
+            break;
+    }
+    return path.substring(0, 4 - id.length) + id + cmd;
+
+}
+
 var Commander = function (commanderId) {    //指挥官类
     this.commanderId = commanderId;
     this.commanderDom = null;
@@ -119,7 +138,7 @@ Commander.prototype.orderCreateNewShip = function () {   //起飞新的飞船的
     this.commanderDom.find('select').each(function () {
         shipSet[$(this).attr('name')] = $(this).val();
     });
-    var ship = new SpaceShip(shipSet,this.commanderId, emptyId, HEIGHT_ARRAY[emptyId - 1]);    //new飞船实例
+    var ship = new SpaceShip(shipSet, this.commanderId, emptyId, HEIGHT_ARRAY[emptyId - 1]);    //new飞船实例
     this.spaceShipArray[emptyId] = ship;
     this.commanderDom.append('<div class="shipControl" id="shipControl-' + emptyId + '"><span>' + emptyId + '号飞船</span>' +
         '<input type="button" value="开始飞行" onclick="commander' + this.commanderId + '.orderBeginFly(' + emptyId + ')"></input>' +
@@ -129,22 +148,68 @@ Commander.prototype.orderCreateNewShip = function () {   //起飞新的飞船的
 
 Commander.prototype.orderBeginFly = function (shipId) {    //命令：开始飞行
     Logger.log(shipId + '号飞船开始飞行');
-    Mediator.sendBroadcase(this.spaceShipArray, { id: shipId, commond: 'fly' });
+    // Mediator.sendBroadcase(this.spaceShipArray, { id: shipId, commond: 'fly' });
+    var cmd = Adapter.jsonToBin({ id: shipId, commond: 'fly' });
+    Bus.sendBroadcase(this.spaceShipArray, cmd);
 }
 
 Commander.prototype.orderStopFly = function (shipId) {     //命令：停止飞行
     Logger.log(shipId + '号飞船停止飞行');
-    Mediator.sendBroadcase(this.spaceShipArray, { id: shipId, commond: 'stop' });
+    // Mediator.sendBroadcase(this.spaceShipArray, { id: shipId, commond: 'stop' });
+    var cmd = Adapter.jsonToBin({ id: shipId, commond: 'stop' });
+    Bus.sendBroadcase(this.spaceShipArray, cmd);
 }
 
 Commander.prototype.orderDestory = function (shipId) {     //命令：摧毁飞船
     Logger.log('摧毁' + shipId + '号飞船');
-    Mediator.sendBroadcase(this.spaceShipArray, { id: shipId, commond: 'destructive' });
+    // Mediator.sendBroadcase(this.spaceShipArray, { id: shipId, commond: 'destructive' });
+    var cmd = Adapter.jsonToBin({ id: shipId, commond: 'destructive' });
+    Bus.sendBroadcase(this.spaceShipArray, cmd);
     $('#shipControl-' + shipId).remove();
     this.spaceShipArray[shipId] = false;
 }
 
-/*****日志*****/
+/*****Adapter类******/
+var Adapter = (function () {
+    return {
+        jsonToBin: function (jsonCmd) {
+            var id = jsonCmd.id.toString(2);
+            var cmd = '';
+            var path = '0000';
+            switch (jsonCmd.commond) {
+                case 'fly':
+                    cmd = '0001';
+                    break;
+                case 'stop':
+                    cmd = "0010";
+                    break;
+                case 'destructive':
+                    cmd = '1100';
+                    break;
+            }
+            return path.substring(0, 4 - id.length) + id + cmd;
+        },
+        binToJson: function (binCmd) {
+            var shipid = parseInt(binCmd.substring(0, 4), 2);
+            var cmd = '';
+            switch (binCmd.substring(4, 8)) {
+                case '0001':
+                    cmd = 'fly';
+                    break;
+                case '0010':
+                    cmd = 'stop';
+                    break;
+                case '1100':
+                    cmd = 'destructive';
+                    break;
+            }
+            return { id: shipid, commond: cmd }
+        }
+    }
+})()
+
+
+/*****日志系统*****/
 var Logger = {
     logDom: (function () {
         $('.main-content').append('<div id="logs"><p>日志:</p></div>');
@@ -155,21 +220,50 @@ var Logger = {
     }
 };
 
-/*****传输介质，模拟丢包和延迟*****/
+/*****传输介质Mediator，模拟丢包和延迟*****/
 var Mediator = (function () {
     var errorRate = 0.3;
     return {
         sendBroadcase: function (shipArr, cmd) {
             var spaceShipArray = shipArr;
-            if (Math.random() <= errorRate) {
-                Logger.log('命令受到干扰，传送失败！');
-            } else {
-                for (var i = 1; i <= MAX_SHIP_NUM; i++) {
-                    if (spaceShipArray[i]) {
-                        spaceShipArray[i].radio({ id: cmd.id, commond: cmd.commond });
+            setTimeout(function () {
+                if (Math.random() <= errorRate) {
+                    Logger.log('命令受到干扰，传送失败！');
+                } else {
+                    Logger.log('命令发送成功。');
+                    for (var i = 1; i <= MAX_SHIP_NUM; i++) {
+                        if (spaceShipArray[i]) {
+                            spaceShipArray[i].radio({ id: cmd.id, commond: cmd.commond });
+                        }
                     }
                 }
+            }, 1000);
+        }
+    }
+})()
+
+/*****传输介质Bus,可重试*****/
+var Bus = (function () {
+    var errorRate = 0.9;
+    return {
+        sendBroadcase: function (shipArr, binCmd) {
+            var spaceShipArray = shipArr;
+            var sendCmd = function () {
+                setTimeout(function () {
+                    if (Math.random() <= errorRate) {
+                        Logger.log('命令受到干扰，传送失败，重试中...');
+                        sendCmd();
+                    } else {
+                        Logger.log('命令发送成功。');
+                        for (var i = 1; i <= MAX_SHIP_NUM; i++) {
+                            if (spaceShipArray[i]) {
+                                spaceShipArray[i].radio(Adapter.binToJson(binCmd));
+                            }
+                        }
+                    }
+                }, 300);
             }
+            sendCmd();
         }
     }
 })()
