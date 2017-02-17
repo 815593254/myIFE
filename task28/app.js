@@ -80,7 +80,6 @@ SpaceShip.prototype.animation = function () {
 SpaceShip.prototype.radio = function (signal) {    //电台
     if (this.shipId == signal.id) {
         this[signal.commond]();
-        console.log('aaaaaaaaaaaaaaaa');
     }
 }
 
@@ -89,6 +88,11 @@ SpaceShip.prototype.destructive = function () {   //自爆装置
 }
 
 SpaceShip.prototype.sendInf = function () {
+    var that = this;
+    setInterval(function () {
+        var binSig = Adapter.jsonToBin({ id: that.shipId, commond: that.status, energy: that.remainEnergy });
+        SignalReceiver.getSignal(binSig);
+    }, 1000)
 
 }
 
@@ -128,7 +132,7 @@ Commander.prototype.orderCreateNewShip = function () {   //起飞新的飞船的
     var emptyId = this.getEmptyId();
     var shipSet = {};
     if (emptyId == false) {
-        console.log('飞船数到达上限');
+        Logger.log('飞船数到达上限');
         return;
     }
 
@@ -139,6 +143,7 @@ Commander.prototype.orderCreateNewShip = function () {   //起飞新的飞船的
     var energySys = this.commanderDom.find('select[name=energySystem] option:selected').text();
 
     var ship = new SpaceShip(shipSet, this.commanderId, emptyId, HEIGHT_ARRAY[emptyId - 1]);    //new飞船实例
+    ship.sendInf();
     Monitor.addNewShip(emptyId, shipName, energySys, 'stop', SHIP_TOTAL_ENERGY);
     this.spaceShipArray[emptyId] = ship;
 
@@ -149,36 +154,44 @@ Commander.prototype.orderCreateNewShip = function () {   //起飞新的飞船的
 }
 
 Commander.prototype.orderBeginFly = function (shipId) {    //命令：开始飞行
-    Logger.log(shipId + '号飞船开始飞行');
+    var that = this;
+    Logger.log('给' + shipId + '号飞船发送命令');
     var cmd = Adapter.jsonToBin({ id: shipId, commond: 'fly' });
-    Bus.sendBroadcase(this.spaceShipArray, cmd, resolve);
-    SignalReceiver.getSignal('asdfsd')
+    function test(resolve) {
+        Bus.sendBroadcase(that.spaceShipArray, cmd, resolve);
+    }
+    var p1 = new Promise(test);
+    var p2 = p1.then(function (result) {
+        Logger.log(shipId + '号飞船已开始飞行');
+    });
 }
 
 Commander.prototype.orderStopFly = function (shipId) {     //命令：停止飞行
-    Logger.log(shipId + '号飞船停止飞行');
+    var that = this;
+    Logger.log('给' + shipId + '号飞船发送命令');
     var cmd = Adapter.jsonToBin({ id: shipId, commond: 'stop' });
-    Bus.sendBroadcase(this.spaceShipArray, cmd, resolve);
+    function test(resolve) {
+        Bus.sendBroadcase(that.spaceShipArray, cmd, resolve);
+    }
+    var p1 = new Promise(test);
+    var p2 = p1.then(function (result) {
+        Logger.log(shipId + '号飞船已停止飞行');
+    });
 }
 
 Commander.prototype.orderDestory = function (shipId) {     //命令：摧毁飞船
+    var that = this;
     Logger.log('摧毁' + shipId + '号飞船');
     var cmd = Adapter.jsonToBin({ id: shipId, commond: 'destructive' });
-    
-    // function test(resolve, reject) {
-    //     Bus.sendBroadcase(this.shipArr, cmd, resolve);
-    // }
-    // var p1 = new Promise(test);
-    // var p2 = p1.then(function (result) {
-    //     console.log('成功：' + result);
-    // });
-    // var p3 = p2.catch(function (reason) {
-    //     console.log('失败：' + reason);
-    // });
-
-    Bus.sendBroadcase(this.spaceShipArray, cmd);
+    function test(resolve) {
+        Bus.sendBroadcase(that.spaceShipArray, cmd, resolve);
+    }
+    var p1 = new Promise(test);
+    var p2 = p1.then(function (result) {
+        that.spaceShipArray[shipId] = false;
+        Logger.log(shipId + '号飞船摧毁');
+    });
     $('#shipControl-' + shipId).remove();
-    // this.spaceShipArray[shipId] = false;
 }
 
 Commander.prototype.removeSpaceShip = function () {
@@ -188,10 +201,10 @@ Commander.prototype.removeSpaceShip = function () {
 /*****Adapter类******/
 var Adapter = (function () {
     return {
-        jsonToBin: function (jsonCmd) {      //json转二进制
+        jsonToBin: function (jsonCmd) {      //json转二进制,格式：{id：***,cmd:***,energy:***}
             var id = jsonCmd.id.toString(2);
             var cmd = '';
-            var path = '0000';
+            var path = '00000000';
             switch (jsonCmd.commond) {
                 case 'fly':
                     cmd = '0001';
@@ -223,7 +236,6 @@ var Adapter = (function () {
             if (binCmd.substring(8, 16) != '11111111') {
                 var ene = parseInt(binCmd.substring(8, 16), 2);
             }
-            console.log(cmd);
             return { id: shipid, commond: cmd, energy: ene }
         }
     }
@@ -244,7 +256,7 @@ var Logger = {
 var Bus = (function () {
     var errorRate = 0;
     return {
-        sendBroadcase: function (shipArr, binCmd) {
+        sendBroadcase: function (shipArr, binCmd, resolve) {
             var shipArrTmp = shipArr;
             var sendCmd = function () {
                 setTimeout(function () {
@@ -256,6 +268,7 @@ var Bus = (function () {
                         for (var i = 1; i <= MAX_SHIP_NUM; i++) {
                             if (shipArrTmp[i]) {
                                 shipArrTmp[i].radio(Adapter.binToJson(binCmd));
+                                resolve(true);
                             }
                         }
                     }
@@ -265,7 +278,6 @@ var Bus = (function () {
         }
     }
 })()
-
 
 /****信号接收器******/
 var SignalReceiver = (function () {
@@ -284,8 +296,10 @@ var DC = (function () {
     var dataTable = [];
     return {
         getBinSignal: function (sig) {
-            varbinSignal = sig;
-            Adapter.binToJson(sig);
+            // varbinSignal = sig;
+            var jsonDate = Adapter.binToJson(sig);
+            dataTable.push(jsonDate);
+            console.log(dataTable[0]);
         }
 
     }
@@ -305,7 +319,6 @@ var commander1 = new Commander(1);      //建立指挥官实例
 commander1.init();                     //初始化
 var commander2 = new Commander(2);      //建立指挥官实例
 commander2.init();                     //初始化
-
 
 setInterval(function () {
     var spaceShipArray1 = commander1.getShipArray();
