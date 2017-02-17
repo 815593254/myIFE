@@ -18,7 +18,7 @@ var SpaceShip = function (shipSet, commanderId, shipId, height) {
         return $('#commander-' + commanderId + '_spaceShip-' + shipId);
     })()
     this.shipId = shipId;       //飞船号
-    this.status = 'static';     //飞船状态
+    this.status = 'stop';     //飞船状态
     this.orbitHeight = height;       //轨道半径
     this.totalEnergy = SHIP_TOTAL_ENERGY;    //总能源
     this.remainEnergy = SHIP_TOTAL_ENERGY;   //剩余能源
@@ -77,6 +77,10 @@ SpaceShip.prototype.destructive = function () {   //自爆装置
     this.shipDom.remove();
 }
 
+SpaceShip.prototype.sendInf = function () {
+
+}
+
 var Commander = function (commanderId) {    //指挥官类
     this.commanderId = commanderId;
     this.commanderDom = null;
@@ -119,7 +123,10 @@ Commander.prototype.orderCreateNewShip = function () {   //起飞新的飞船的
     this.commanderDom.find('select').each(function () {
         shipSet[$(this).attr('name')] = $(this).val();
     });
+    var shipName = this.commanderDom.find('select[name=powerSystem] option:selected').text();
+    var energySys = this.commanderDom.find('select[name=energySystem] option:selected').text();
     var ship = new SpaceShip(shipSet, this.commanderId, emptyId, HEIGHT_ARRAY[emptyId - 1]);    //new飞船实例
+    Monitor.addNewShip(emptyId, shipName, energySys, 'stop', SHIP_TOTAL_ENERGY);
     this.spaceShipArray[emptyId] = ship;
     this.commanderDom.append('<div class="shipControl" id="shipControl-' + emptyId + '"><span>' + emptyId + '号飞船</span>' +
         '<input type="button" value="开始飞行" onclick="commander' + this.commanderId + '.orderBeginFly(' + emptyId + ')"></input>' +
@@ -199,7 +206,7 @@ var Logger = {
 
 /*****传输介质Bus,可重试*****/
 var Bus = (function () {
-    var errorRate = 0.9;
+    var errorRate = 0.1;
     return {
         sendBroadcase: function (shipArr, binCmd) {
             var spaceShipArray = shipArr;
@@ -219,6 +226,27 @@ var Bus = (function () {
                 }, 300);
             }
             sendCmd();
+        }
+    }
+})()
+
+
+/****信号接收器******/
+var SignalReceiver = (function(){
+
+})()
+
+/*****数据处理中心*****/
+var DC = (function(){
+
+})()
+
+/****监视系统*****/
+var Monitor = (function () {
+    var monitorDom = $('.imformation table');
+    return {
+        addNewShip: function (id, name, energy, status, energyLeft) {
+            monitorDom.append('<tr id=monitorId-"' + id + '"><td>' + id + '</td><td>' + name + '</td><td>' + energy + '</td><td id="status">' + status + '</td><td id="energy">' + energyLeft + '</td></tr>');
         }
     }
 })()
