@@ -2,6 +2,8 @@ var SHIP_TOTAL_ENERGY = 100;  //飞船初始能源
 var FRAME_PRE_SECOND = 100;   //帧数
 var MAX_SHIP_NUM = 4;         //最大飞船数
 var HEIGHT_ARRAY = [200, 250, 300, 350];  //设定轨道
+var POWER_SYSTEM = [{speed:30,consume:0.05},{speed:50,consume:0.07},{speed:80,consume:0.09}]   //动力系统
+var ENERGY_RECOVER_PRE_SECOND = [0.02,0.03,0.04]     //充电系统
 
 /****飞船类*****/
 var SpaceShip = function (shipSet,commanderId, shipId, height) {
@@ -17,17 +19,17 @@ var SpaceShip = function (shipSet,commanderId, shipId, height) {
     })()
     this.shipId = shipId;       //飞船号
     this.status = 'static';     //飞船状态
-    this.ORBIT_HEIGHT = height;       //轨道半径
+    this.orbitHeight = height;       //轨道半径
     this.totalEnergy = SHIP_TOTAL_ENERGY;    //总能源
     this.remainEnergy = SHIP_TOTAL_ENERGY;   //剩余能源
     this.leftPosition = 0;  //left坐标量,这里可设起始位置
     this.topPosition = 0;   //top坐标量
     this.deg = 0;      //飞船角坐标角度
     // this.speed = 50;   //飞行角速度，(单位：度/秒)
-    this.speed = shipSet.powerSystem;
-    // this.ENERGY_CONSUME_PRE_SECOND = 0.05;  //能源消耗速度(每秒百分之几)
-    this.ENERGY_CONSUME_PRE_SECOND = shipSet.energySystem;
-    this.ENERGY_RECOVER_PRE_SECOND = shipSet.energySystem;    //能源回复速度（每秒百分之几）
+    this.speed = POWER_SYSTEM[shipSet.powerSystem].speed;
+    // this.energyComsumePreSecond = 0.05;  //能源消耗速度(每秒百分之几)
+    this.energyComsumePreSecond = POWER_SYSTEM[shipSet.powerSystem].consume;
+    this.energyRecoverPreSecond = ENERGY_RECOVER_PRE_SECOND[shipSet.energySystem];    //能源回复速度（每秒百分之几）
 }
 
 /*****设置飞船转为飞行状态******/
@@ -47,10 +49,10 @@ SpaceShip.prototype.animation = function () {
             this.status = 'stop'
             return;
         }
-        this.topPosition = 50 - this.ORBIT_HEIGHT * Math.sin(this.deg * Math.PI * 2 / 360);    //计算top和left的值
-        this.leftPosition = 100 + this.ORBIT_HEIGHT * Math.cos(this.deg * Math.PI * 2 / 360);
+        this.topPosition = 50 - this.orbitHeight * Math.sin(this.deg * Math.PI * 2 / 360);    //计算top和left的值
+        this.leftPosition = 100 + this.orbitHeight * Math.cos(this.deg * Math.PI * 2 / 360);
         this.deg += this.speed / FRAME_PRE_SECOND;          //计算每帧改变多少角度
-        this.remainEnergy -= this.totalEnergy * this.ENERGY_CONSUME_PRE_SECOND / FRAME_PRE_SECOND;    //计算每帧减少多少能源
+        this.remainEnergy -= this.totalEnergy * this.energyComsumePreSecond / FRAME_PRE_SECOND;    //计算每帧减少多少能源
         this.shipDom.css('top', this.topPosition + 'px');                              //    
         this.shipDom.css('left', this.leftPosition + 'px');                            //设置样式     
         this.shipDom.css('transform', 'rotate(' + this.deg * -1 + 'deg)');             //Css 
@@ -59,7 +61,7 @@ SpaceShip.prototype.animation = function () {
 
     if (this.status == 'stop') {
         if (this.remainEnergy <= this.totalEnergy) {
-            this.remainEnergy += this.totalEnergy * this.ENERGY_RECOVER_PRE_SECOND / FRAME_PRE_SECOND;    //计算每帧回复多少能源
+            this.remainEnergy += this.totalEnergy * this.energyRecoverPreSecond / FRAME_PRE_SECOND;    //计算每帧回复多少能源
         }
         this.shipDom.find('.remainEnergy').text(Math.round(this.remainEnergy) + "%");
     }
@@ -87,8 +89,8 @@ Commander.prototype.init = function () {    //初始化指挥官类
     }
     $('#commander-area').append('<div class="control-area" id="commander-' + this.commanderId + '" >' +   //添加dom节点
         '<input class="createNewShipBtn" value="起飞新的飞船" type="button" onclick="commander' + this.commanderId + '.orderCreateNewShip()"/>&nbsp;&nbsp;' +
-        '<select name="powerSystem"><option value="30">前进号</option><option value="50">奔腾号</option><option value="80">超越号</option></select>&nbsp;&nbsp;&nbsp;' +
-        '<select name="energySystem"><option value="0.02">劲量型</option><option value="0.03">光能型</option><option value="0.04">永久型</option></select>' +
+        '<select name="powerSystem"><option value="0">前进号</option><option value="1">奔腾号</option><option value="2">超越号</option></select>&nbsp;&nbsp;&nbsp;' +
+        '<select name="energySystem"><option value="0">劲量型</option><option value="1">光能型</option><option value="2">永久型</option></select>' +
         '</div>');
     this.commanderDom = $('#commander-' + this.commanderId);
 }
