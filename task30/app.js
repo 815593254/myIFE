@@ -1,5 +1,6 @@
 $(function () {
 
+    var result = [false, false, false, false, false];
     /*****隐藏提示框****/
     $('#nameTipTr').hide();
     $('#pwdTipTr').hide();
@@ -38,6 +39,16 @@ $(function () {
         testValue.phoneTest($('#phoneTip'), $('#phone'), $('#phone').val());
     })
 
+    $('#inputBtn').on('click', function () {
+        for (var x of result) {
+            if (!x) {
+                alert("失败，请检查输入");
+                return;
+            }            
+        }
+        alert('成功！');
+        return;
+    })
 
     /*****格式检测类*******/
     var testValue = {
@@ -47,14 +58,17 @@ $(function () {
                 tip.text('姓名不能为空');
                 tip.css('color', 'red');
                 inputBox.css('border', '1px solid red');
+                result[0] = false;
             } else if (countLength(value) >= 4 && countLength(value) <= 16) {
                 tip.text('格式正确');
                 tip.css('color', 'green');
                 inputBox.css('border', '1px solid green');
+                result[0] = true;
             } else {
                 tip.text('请输入长度为4~16位字符');
                 tip.css('color', 'red');
                 inputBox.css('border', '1px solid red');
+                result[0] = false;
             }
         },
 
@@ -64,14 +78,17 @@ $(function () {
                 tip.text('密码不能为空');
                 tip.css('color', 'red');
                 inputBox.css('border', '1px solid red');
+                result[1] = false;
             } else if (countLength(value) >= 4 && countLength(value) <= 16) {
                 tip.text('格式正确');
                 tip.css('color', 'green');
                 inputBox.css('border', '1px solid green');
+                result[1] = true;
             } else {
                 tip.text('请输入长度为4~16位字符');
                 tip.css('color', 'red');
                 inputBox.css('border', '1px solid red');
+                result[1] = false;
             }
         },
 
@@ -81,18 +98,22 @@ $(function () {
                 tip.text('密码不能为空');
                 tip.css('color', 'red');
                 inputBox.css('border', '1px solid red');
+                result[2] = false;
             } else if (countLength(value2) >= 4 && countLength(value2) <= 16 && value1 === value2) {
                 tip.text('密码正确');
                 tip.css('color', 'green');
                 inputBox.css('border', '1px solid green');
+                result[2] = true;
             } else if (value1 != value2 || countLength(value2) == 0) {
                 tip.text('请输入相同密码');
                 tip.css('color', 'red');
                 inputBox.css('border', '1px solid red');
+                result[2] = false;
             } else {
                 tip.text('请输入长度为4~16位字符');
                 tip.css('color', 'red');
                 inputBox.css('border', '1px solid red');
+                result[2] = false;
             }
         },
 
@@ -103,14 +124,17 @@ $(function () {
                 tip.text('邮箱可用');
                 tip.css('color', 'green');
                 inputBox.css('border', '1px solid green');
+                result[3] = true;
             } else if (countLength(value) == 0) {
                 tip.text('请输入邮箱地址');
                 tip.css('color', 'red');
                 inputBox.css('border', '1px solid red');
+                result[3] = false;
             } else {
                 tip.text('请输入正确邮箱地址');
                 tip.css('color', 'red');
                 inputBox.css('border', '1px solid red');
+                result[3] = false;
             }
         },
 
@@ -120,10 +144,12 @@ $(function () {
                 tip.text('手机号码可用');
                 tip.css('color', 'green');
                 inputBox.css('border', '1px solid green');
+                result[4] = true;
             } else {
                 tip.text('请输入正确手机号码');
                 tip.css('color', 'red');
                 inputBox.css('border', '1px solid red');
+                result[4] = false;
             }
         },
 
@@ -141,8 +167,6 @@ $(function () {
             return inputLength;
         }
     }
-
-
 
     /****计算长度*****/
     function countLength(str) {
