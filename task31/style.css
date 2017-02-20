@@ -1,0 +1,12 @@
+body{
+    text-align: center;
+}
+select{
+    margin:6px;
+}
+input{
+    margin: 6px;
+}
+#changeZoom{
+    margin-top: 20px;
+}
