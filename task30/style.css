@@ -11,3 +11,11 @@
     position: relative;
     left:47px;
 }
+.inputBox{
+    margin: 10px;
+    padding: 30px;
+}
+.inputBox{
+    border:1px solid;
+    border-radius:5px 5px;
+}

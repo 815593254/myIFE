@@ -8,10 +8,51 @@
 </head>
 
 <body>
-    <div class="main">
-        <span>名称</span><input text="text" name="inputValue" /><input id="inputBtn" type="button" value="确定" /><br />
-        <span id="tip">请输入4~16个字符</span>
-    </div>
+    <table class="main">
+        <tr>
+            <td><label for="name">名称</label></td>
+            <td><input type="text" id="name" class="inputBox" /></td>
+        </tr>
+        <tr id="nameTipTr">
+            <td></td>
+            <td><span id="nameTip">请输入4~16个字符</span></td>
+        </tr>
+        <tr>
+            <td><label for="pwd">密码</label></td>
+            <td><input type="password" id="pwd" class="inputBox" /></td>
+        </tr>
+        <tr id="pwdTipTr">
+            <td></td>
+            <td><span id="pwdTip">请输入4~16个字符</td>
+        <tr>
+            <td><label for="pwdConfirm">密码确认</label></td>
+            <td><input type="password" id="pwdConfirm" class="inputBox" /></td>
+        </tr>
+        <tr id="pwdConfirmTipTr">
+            <td></td>
+            <td><span id="pwdConfirmTip">请输入相同密码</td>
+        </tr>
+        <tr>
+            <td> <label for="email">邮箱</label></td>
+            <td><input type="text" id="email" class="inputBox" /></td>
+        </tr>
+        <tr id="emailTipTr">
+            <td></td>
+            <td><span id="emailTip">请输入正确邮箱格式</td>
+        </tr>
+        <tr>
+            <td><label for="phone">手机</label></td>
+            <td><input type="text" id="phone" class="inputBox" /></td>
+        </tr>
+        <tr id="phoneTipTr">
+            <td></td>
+            <td><span id="phoneTip">请输入13位手机号码</td>
+        </tr>
+        <tr style="text-align:right">
+            <td></td>
+            <td><input id="inputBtn" type="button" value="确定" /><br /></td>
+        </tr>
+    </table>
     <script src=".././jquery-3.1.1.js"></script>
     <script src="./app.js"></script>
 </body>
