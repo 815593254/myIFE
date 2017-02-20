@@ -1,0 +1,13 @@
+.main span{
+    margin: 5px;
+    padding: 5px;
+}
+.main input{
+    margin: 5px;
+    padding: 5px;
+}
+#tip{
+    font-size: 10px;
+    position: relative;
+    left:47px;
+}
