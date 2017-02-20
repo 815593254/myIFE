@@ -144,7 +144,7 @@ Commander.prototype.orderCreateNewShip = function () {   //起飞新的飞船的
 
     var ship = new SpaceShip(shipSet, this.commanderId, emptyId, HEIGHT_ARRAY[emptyId - 1]);    //new飞船实例
     ship.sendInf();
-    Monitor.addNewShip(emptyId, shipName, energySys, 'stop', SHIP_TOTAL_ENERGY);
+    Monitor.addNewShip(emptyId, shipName, energySys, '静止中', SHIP_TOTAL_ENERGY);
     this.spaceShipArray[emptyId] = ship;
 
     this.commanderDom.append('<div class="shipControl" id="shipControl-' + emptyId + '"><span>' + emptyId + '号飞船</span>' +
@@ -192,6 +192,7 @@ Commander.prototype.orderDestory = function (shipId) {     //命令：摧毁飞�
         Logger.log(shipId + '号飞船摧毁');
     });
     $('#shipControl-' + shipId).remove();
+    Monitor.removeMonitor(shipId);
 }
 
 Commander.prototype.removeSpaceShip = function () {
@@ -216,8 +217,10 @@ var Adapter = (function () {
                     cmd = '0011';
                     break;
             }
-            var ene = jsonCmd.energy && jsonCmd.energy.toString(2) || '11111111';
-            return path.substring(0, 4 - id.length) + id + cmd + ene;
+            var ene = jsonCmd.energy && Math.round(jsonCmd.energy.toString(2)).toString() || '11111111';
+            console.log(ene);
+            console.log(path.substring(0, 4 - id.length) + id + cmd + path.substring(0, 8 - ene.length) + ene);
+            return path.substring(0, 4 - id.length) + id + cmd + path.substring(0, 8 - ene.length) + ene;
         },
         binToJson: function (binCmd) {         //二进制转json
             var shipid = parseInt(binCmd.substring(0, 4), 2);
@@ -291,44 +294,61 @@ var SignalReceiver = (function () {
     }
 })()
 
+/****监视系统*****/
+var Monitor = (function () {
+    var monitorDom = $('.information table');
+    return {
+        addNewShip: function (id, name, energy, status, energyLeft) {
+            monitorDom.append('<tr id="monitorId-' + id + '"><td name="shipId">' + id + '</td><td name="shipName">' + name + '</td><td naem="energySys">' + energy + '</td><td name="status">' + status + '</td><td name="energyLeft">' + energyLeft + '%</td></tr>');
+        },
+        pushShipInf: function (arr) {
+            var id = arr.id,
+                energyLeft = arr.energy;
+            switch (arr.commond) {
+                case 'fly':
+                    status = "飞行中";
+                    break;
+                case 'stop':
+                    status = "静止中";
+                    break;
+            }
+            monitorDom.find(`#monitorId-${id}`).find('[name=status]').text(status);
+            monitorDom.find(`#monitorId-${id}`).find('[name=energyLeft]').text(energyLeft + "%");
+        },
+        removeMonitor: function (id) {
+            monitorDom.find(`#monitorId-${id}`).remove();
+        }
+    }
+})()
+
 /*****数据处理中心*****/
 var DC = (function () {
     var dataTable = [];
     return {
         getBinSignal: function (sig) {
-            // varbinSignal = sig;
             var jsonDate = Adapter.binToJson(sig);
             dataTable.push(jsonDate);
-            console.log(dataTable[0]);
-        }
-
-    }
-})()
-
-/****监视系统*****/
-var Monitor = (function () {
-    var monitorDom = $('.imformation table');
-    return {
-        addNewShip: function (id, name, energy, status, energyLeft) {
-            monitorDom.append('<tr id=monitorId-"' + id + '"><td>' + id + '</td><td>' + name + '</td><td>' + energy + '</td><td id="status">' + status + '</td><td id="energy">' + energyLeft + '%</td></tr>');
+            Monitor.pushShipInf(dataTable[dataTable.length - 1]);
         }
     }
 })()
+
+
 
 var commander1 = new Commander(1);      //建立指挥官实例
 commander1.init();                     //初始化
-var commander2 = new Commander(2);      //建立指挥官实例
-commander2.init();                     //初始化
+// var commander2 = new Commander(2);      //建立指挥官实例
+// commander2.init();                     //初始化
 
 setInterval(function () {
     var spaceShipArray1 = commander1.getShipArray();
-    var spaceShipArray2 = commander2.getShipArray();
+    // var spaceShipArray2 = commander2.getShipArray();
     for (var i = 1; i <= MAX_SHIP_NUM; i++) {
         if (spaceShipArray1[i]) {
             spaceShipArray1[i].animation();
         }
-        if (spaceShipArray2[i]) {
-            spaceShipArray2[i].animation();
-        }
+        // if (spaceShipArray2[i]) {
+        //     spaceShipArray2[i].animation();
+        // }
     }
 }, 1000 / FRAME_PRE_SECOND)
