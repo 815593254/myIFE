@@ -1,30 +1,18 @@
-$(function () {
-    $('#inputCompany').hide();
-    $('#radioZoom').on('change', function () {
-        if ($('#radioZoom').find('input:checked').val() == 'yes') {
-            $('#selectSchool').show();
-            $('#inputCompany').hide();
-        }else{
-            $('#selectSchool').hide();
-            $('#inputCompany').show();
-        }
+$('#inputCompany').hide();
+$('#radioZoom').on('change', function () {
+    if ($('#radioZoom').find('input:checked').val() == 'yes') {
+        $('#selectCitySchool').show();
+        $('#inputCompany').hide();
+    } else {
+        $('#selectCitySchool').hide();
+        $('#inputCompany').show();
+    }
+})
+$('#selectSchool>select').hide();
+$('#selectSchool>select:first-child').show();
+$('#selectCity').on('change', function () {
+    $('#selectSchool>select').each(function () {
+        $(this).hide();
     })
-    $('#shanghaiSchool').hide();
-    $('#guangzhouSchool').hide();
-    $('#selectCity').on('change',function(){
-        if($('#selectCity').find(':checked').val()=='北京'){
-            $('#beijinSchool').show();
-            $('#shanghaiSchool').hide();
-            $('#guangzhouSchool').hide();
-        }else if($('#selectCity').find(':checked').val()=='上海'){
-            $('#beijinSchool').hide();
-            $('#shanghaiSchool').show();
-            $('#guangzhouSchool').hide();
-        }else{
-            $('#beijinSchool').hide();
-            $('#shanghaiSchool').hide();
-            $('#guangzhouSchool').show();
-        }
-    })
-
+    $('#selectSchool').find(`:nth-child(${$('#selectCity').find(':checked').index() + 1})`).show();
 })
