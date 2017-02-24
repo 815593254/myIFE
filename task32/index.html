@@ -12,19 +12,23 @@
         <fieldset id="typeBox">
             <legend>表单类型</legend>
             <input name="inputType" id="input" type="radio" value="input" checked><label for="input">输入框</label>
-            <input name="inputType" id="radio" type="radio" value="radio"><label for="radio">单选框</label>
-            <input name="inputType" id="checkbox" type="radio" value="checkbox"><label for="checkbox">多选框</label>
-            <input name="inputType" id="select" type="radio" value="select"><label for="select">下拉框</label>
             <input name="inputType" id="textarea" type="radio" value="textarea"><label for="textarea">文本域</label>
         </fieldset>
         <fieldset id="optBox">
             <legend>配置</legend>
-            <label for="labelText">名称</label><input type="text" id="labelText">
+            <label for="labelText">名称</label><input type="text" id="labelText"><br />
+            <div id="len">
+                <label for="min">最小长度</label><input type="text" id="min"><br />
+                <label for="max">最大长度</label><input type="text" id="max">
+            </div>
         </fieldset>
         <fieldset id="ruleBox">
             <legend>规则</legend>
             <input type="radio" name="inputRule" value="text" id="text" checked><label for="text">文字</label>
             <input type="radio" name="inputRule" value="num" id="num"><label for="num">数字</label>
+            <input type="radio" name="inputRule" value="pwd" id="pwd"><label for="pwd">密码</label>
+            <input type="radio" name="inputRule" value="email" id="email"><label for="email">邮箱</label>
+            <input type="radio" name="inputRule" value="phone" id="phone"><label for="phone">手机</label>
         </fieldset>
         <input type="button" id="addBtn" value="添加">
     </div>

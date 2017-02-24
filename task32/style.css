@@ -16,4 +16,21 @@ input{
     padding: 5px;
     margin-left: 15px;
     width:400px;
+    position: relative;
+}
+#formDom label{
+    margin:5px;
+}
+
+.success{
+    color:green;
+}
+.fail{
+    color:red;
+}
+.border_success{
+    border:1px green solid;
+}
+.border_fail{
+    border:1px red solid;
 }
