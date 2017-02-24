@@ -31,7 +31,6 @@ var OptValBox = function () {
 var optSet = new OptValBox();
 var optCreate = new OptCreate();
 
-
 $('#typeBox').on('change', function () {
     if ($(this).find(':checked').val() == 'input') {
         $('#len').show();
@@ -43,12 +42,13 @@ $('#typeBox').on('change', function () {
 })
 
 $('#ruleBox').on('change', function () {
-    if ($(this).find(':checked').val() == 'text' || $(this).find(':checked').val() == 'pwd'){
+    if ($(this).find(':checked').val() == 'text' || $(this).find(':checked').val() == 'pwd') {
         $('#len').show();
-    }else{
+    } else {
         $('#len').hide();
     }
 })
+
 $('#addBtn').click(function () {
     if ($('#labelText').val() == '') {
         alert('表单名不能为空');
